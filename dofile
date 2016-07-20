@@ -1,7 +1,9 @@
 [CLangCompiler]
 SOURCES=./src/wxkad.cpp \
+        ./src/kadnet.c \
         ./extrn/common-code/log.c \
         ./extrn/common-code/mem.c \
+        ./extrn/common-code/list.c \
         ./extrn/zlib/compress.c \
         ./extrn/zlib/uncompr.c \
         ./extrn/zlib/gzclose.c \
@@ -24,9 +26,14 @@ SOURCES=./src/wxkad.cpp \
         ./extrn/polarssl/library/arc4.c 
 
 OBJDIR=./obj/
-INCLUDE=./src;./extrn/common-code;./extrn/zlib;./extrn/polarssl/include
-KEYS=-fshort-wchar -fPIC -fpack-struct=1
-DEFINE=POLARSSL_HAVEGE_C POLARSSL_MD4_C
+INCLUDE=./src;./extrn/common-code;./extrn/zlib;./extrn/polarssl/include;
+#KEYS=-fshort-wchar -fPIC -fpack-struct=1
+KEYS=-fshort-wchar -fPIC
+DEFINE=POLARSSL_HAVEGE_C POLARSSL_MD4_C 
+Wx30:
+KEYSXX=-std=c++11
+INCLUDE=/usr/lib/wx/include/gtk2-unicode-3.0;/usr/include/wx-3.0;
+DEFINE=_FILE_OFFSET_BITS=64 WXUSINGDLL __WXGTK__
 Debug:
 KEYS=-ggdb
 Verbose:
@@ -35,28 +42,29 @@ Profile:
 DEFINE=EXIT_TIMER
 Daemon:
 DEFINE=RUN_AS_DAEMON
-[CLangLinker]
+
+[CLangXXLinker]
 TARGETNAME=wxkad
 TARGETDIR=./bin/
+Wx30:
+LIBS= wx_gtk2u_core-3.0 wx_baseu-3.0 
 Shared:
-LIBS= c rt kad event_core event_extra wx
+LIBS= c rt kad event_core event_extra pthread
 Static:
-LIBS=c rt event_core event_extra wx
+LIBS=c rt event_core event_extra pthread
 STATIC_LIBS=./lib/libkad.a ./lib/libmule.a
-#Profile:
-#LIBS=profiler
 
 [Cleaner]
 DIRS=./;./obj/
 EXTS=*.o;*.dat
 
-Build >> [CLangCompiler,CLangLinker]
+Build >> [CLangCompiler,CLangXXLinker]
 Clean >> [Cleaner]
-Rebuild >> [Cleaner,CLangCompiler,CLangLinker]
+Rebuild >> [Cleaner,CLangCompiler,CLangXXLinker]
 
-rb == [Rebuild Debug Verbose Static]
-default == [Build Debug Verbose Static]
-profile == [Build Debug Verbose Static Profile]
-rbprof == [Rebuild Debug Verbose Static Profile]
-rbhushprof == [Rebuild Debug Static Profile]
+rb == [Rebuild Debug Verbose Static Wx30]
+default == [Build Debug Verbose Static Wx30]
+profile == [Build Debug Verbose Static Profile Wx30]
+rbprof == [Rebuild Debug Verbose Static Profile Wx30]
+rbhushprof == [Rebuild Debug Static Profile Wx30]
 
